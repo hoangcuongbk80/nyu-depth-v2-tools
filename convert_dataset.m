@@ -64,8 +64,8 @@ function [] = convert_dataset(dir, factor)
     if generateDepth
         load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat depths
         fprintf('Generating depth images ...\n');
-        generate_depth(depths, list_train, [dir '/depth/train'], factor);
-        generate_depth(depths, list_test, [dir '/depth/test'], factor);
+        generate_depths(depths, list_train, [dir '/depth/train'], factor);
+        generate_depths(depths, list_test, [dir '/depth/test'], factor);
         clear depths
     end;
     
@@ -80,11 +80,11 @@ function [] = convert_dataset(dir, factor)
         clear instances
     end;
     
-    if generateLabels
+    if generateLabelsgenerate_depth
         fprintf('Generating labels ...\n');
         load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat labels
         generate_labels(labels, list_train, [dir '/labels/train'], factor)
-          generate_labels(labels, list_test, [dir '/labels/test'], factor)
+        generate_labels(labels, list_test, [dir '/labels/test'], factor)
         clear labels
     end;
 
