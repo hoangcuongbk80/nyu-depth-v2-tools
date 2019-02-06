@@ -125,7 +125,7 @@ function generate_images(images, list, outdir, factor)
       img = images(:, :, :, ii);
       
       img = imresize(img, factor);
-      imwrite(img, [outdir '/' id '.png'], 'Quality', 98);
+      imwrite(img, [outdir '/' id '.jpg'], 'Quality', 98);
     end;
 end
 
