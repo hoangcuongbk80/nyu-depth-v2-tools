@@ -35,7 +35,7 @@ function [] = convert_dataset(dir, factor)
 % Adapted by David Stutz <david.stutz@rwth-aachen.de>
 
     if nargin < 1
-        dir ='./NYUDepthV2/data'
+        dir ='./data'
     end;
 
     % Defines the factor of which the width and height of the image is
@@ -45,14 +45,16 @@ function [] = convert_dataset(dir, factor)
     end;
     
     generateImages = 1;
-	generateDepth = 1;
-	generateGroundTruth = 1;
+    generateDepth = 1;
+    generateGroundTruth = 1;
+    generateLabels = 1;
+    generateInstances = 1;
     
     load list_train.txt
     load list_test.txt
 
     if generateImages
-        load ./NYUDepthV2/nyu_depth_v2_labeled.mat images
+        load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat images
         fprintf('Generating color images ...\n');
         generate_images(images, list_train, [dir '/images/train'], factor);
         generate_images(images, list_test, [dir '/images/test'], factor);
@@ -60,21 +62,37 @@ function [] = convert_dataset(dir, factor)
     end;
     
     if generateDepth
-        load ./NYUDepthV2/nyu_depth_v2_labeled.mat depths
+        load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat depths
         fprintf('Generating depth images ...\n');
         generate_depth(depths, list_train, [dir '/depth/train'], factor);
         generate_depth(depths, list_test, [dir '/depth/test'], factor);
         clear depths
     end;
     
-    if generateGroundTruth
-        % generate cleaned-up groundtruth in BSDS format
+    if generateGroundTruthed
+        % generate clean-up groundtruth in BSDS format
         fprintf('Generating ground truth ...\n');
-        load ./NYUDepthV2/nyu_depth_v2_labeled.mat images labels instances
+        load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat images labels instances
         mask_border = find_border_region(images);
         generate_groundtruth_medfilt(labels, instances, mask_border, list_train, [dir '/groundTruth/train'], factor);
         generate_groundtruth_medfilt(labels, instances, mask_border, list_test, [dir '/groundTruth/test'], factor);
         clear labels
+        clear instances
+    end;
+    
+    if generateLabels
+        fprintf('Generating labels ...\n');
+        load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat labels
+        generate_labels(labels, list_train, [dir '/labels/train'], factor)
+          generate_labels(labels, list_test, [dir '/labels/test'], factor)
+        clear labels
+    end;
+
+    if generateInstances
+        fprintf('Generating instances ...\n');
+        load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat instances
+        generate_instances(instances, list_train, [dir '/instances/train'], factor)
+        generate_instances(instances, list_test, [dir '/instances/test'], factor)
         clear instances
     end;
     
@@ -107,7 +125,7 @@ function generate_images(images, list, outdir, factor)
       img = images(:, :, :, ii);
       
       img = imresize(img, factor);
-      imwrite(img, [outdir '/' id '.jpg'], 'Quality', 98);
+      imwrite(img, [outdir '/' id '.png'], 'Quality', 98);
     end;
 end
 
@@ -163,7 +181,37 @@ function generate_raw_depth(rawDepths, list, outdir, factor)
 
 end
 
-function generate_depth(depths, list, outdir, factor)
+function generate_labels(labels, list, outdir, factor)
+    step = 1./factor;
+
+    if ~exist(outdir)
+        system(['mkdir -p ' outdir]);
+    end;
+
+    for ii = list',
+      id = num2str(ii, '%08d');
+      label = labels(:, :, ii);
+      label = label(step:step:end, step:step:end);
+      imwrite(label, [outdir '/' id '.png']);
+    end;
+end
+
+function generate_instances(instances, list, outdir, factor)
+    step = 1./factor;
+
+    if ~exist(outdir)
+        system(['mkdir -p ' outdir]);
+    end;
+
+    for ii = list',
+      id = num2str(ii, '%08d');
+      instance = instances(:, :, ii);
+      instance = instance(step:step:end, step:step:end);
+      imwrite(instance, [outdir '/' id '.png']);
+    end;
+end
+
+function generate_depths(depths, list, outdir, factor)
 % function generate_depth(depths, list, outdir, factor)
 %
 % Subsamples the depth images by the defined step size.
