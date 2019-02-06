@@ -46,7 +46,7 @@ function [] = convert_dataset(dir, factor)
     
     generateImages = 1;
     generateDepth = 1;
-    generateGroundTruth = 1;
+    generateGroundTruthed = 1;
     generateLabels = 1;
     generateInstances = 1;
     
@@ -80,7 +80,7 @@ function [] = convert_dataset(dir, factor)
         clear instances
     end;
     
-    if generateLabelsgenerate_depth
+    if generateLabels
         fprintf('Generating labels ...\n');
         load /home/hoang/Datasets/NYUv2/nyu_depth_v2_labeled.mat labels
         generate_labels(labels, list_train, [dir '/labels/train'], factor)
